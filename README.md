@@ -26,3 +26,15 @@ LCK is at the head of Lawson Creek. This other one is further down the valley so
 delta to be more pronounced even though it's closer to WCV than LCK.
 
 
+# Run
+
+```
+$ git clone git@github.com:keithpjolley/sdgeweatherscrape.git
+$ cd ./sdgeweatherscrape
+$ python -m venv venv
+$ . venv/bin/activate
+$ pip install --upgrade pip
+$ pip install -r requirements
+$ ./scrape --verbose
+```
+

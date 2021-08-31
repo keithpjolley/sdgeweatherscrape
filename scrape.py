@@ -8,6 +8,7 @@ import sqlite3
 import re
 
 from bs4 import BeautifulSoup
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
@@ -15,7 +16,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-def most_recent_data(driver):
+
+def most_recent_observation(driver):
     tr_sel = 'div#observations>table>tbody>tr'
     try:
         tr = driver.find_element_by_css_selector(tr_sel)
@@ -24,12 +26,44 @@ def most_recent_data(driver):
         elements = []
     return elements
 
-class we_has_data(object):
+
+class we_has_observation(object):
     def __call__(self, driver):
-        return len(most_recent_data(driver)) > 0
+        return len(most_recent_observation(driver)) > 0
 
 
-def get_data(me, station):
+def fix_date(datestr):
+    now = datetime.today()
+    dt = datetime.strptime(datestr, '%m/%d %H:%M%p %Z')
+    # strptime not smart enough to do the right thing with '%p (am/pm)'.
+    if re.search('pm ', datestr) and dt.hour != 12:
+        print(dt)
+        dt = dt.replace(hour = dt.hour + 12)
+    org_year = dt.year
+    dt = dt.replace(year = now.year)
+    if abs((now - dt).days) > 180:
+        dt = dt.replace(year = now.year - 1)
+    if abs((now - dt).days) > 180:
+        # Give up.
+        dt = dt.replace(year = org.year)
+    return dt.astimezone(tz=None).isoformat()
+
+
+def save_observation(me, observation, dbfile):
+    con = sqlite3.connect(dbfile)
+    cur = con.cursor()
+    table = 'observations'
+    columns = ', '.join(observation.keys())
+    constraint = f'UNIQUE(Valid, station) ON CONFLICT IGNORE'
+    placeholders = ':'+', :'.join(observation.keys())
+    sql = f'INSERT INTO {table} ({columns}) VALUES ({placeholders})'
+    cur.execute(f'CREATE TABLE IF NOT EXISTS {table} ({columns}, {constraint})')
+    cur.execute(sql, observation)
+    con.commit()
+
+def get_observations(me, station, dbfile, verbose):
+    if verbose:
+        print(station)
     url = 'https://weather.sdgeweather.com/station/' + station
     wait = 5 # seconds
     options = Options()
@@ -43,15 +77,15 @@ def get_data(me, station):
             EC.element_to_be_clickable((By.XPATH, '//a[@href="#observations"]'))
         )
     # Wait until the observation data is loaded.
-    WebDriverWait(driver, wait).until(we_has_data())
+    WebDriverWait(driver, wait).until(we_has_observation())
 
     # This should be able to be done w/o bs but seems maybe not.
     source = driver.page_source
     soup = BeautifulSoup(source, 'lxml')
-    observation_data = soup.find('div', id='observations')
-    ths = observation_data.find('thead').find_all('th')
-    tds = observation_data.find('tbody').find('tr').find_all('td')
+    observation = soup.find('div', id='observations')
+    ths = observation.find('thead').find_all('th')
     columns = [col.find('a').get_text().replace('*', '') for col in ths]
+    trs = observation.find('tbody').find_all('tr')
     # Make the headers more descriptive.
     replacement_keys = {
         'Winds': 'Winds_MPH',
@@ -60,26 +94,19 @@ def get_data(me, station):
         'Humidity': 'Humidity_PCT',
     }
     columns = [replacement_keys[c] if c in replacement_keys else c for c in columns]
-    data = [col.get_text() for col in tds]
-    ret = {c:d for c,d in zip(columns, data) }
-    # Change the data from string to number.
     regex = re.compile(r'\D+')
-    for k in replacement_keys.values():
-        ret[k] = regex.sub('', ret[k])
-    ret['station'] = station
-    return ret
-
-def save_data(me, data, dbfile):
-    con = sqlite3.connect(dbfile)
-    cur = con.cursor()
-    table = 'observations'
-    columns = ', '.join(my_dict.keys())
-    constraint = f'UNIQUE(Valid, station) ON CONFLICT IGNORE'
-    placeholders = ':'+', :'.join(my_dict.keys())
-    sql = f'INSERT INTO {table} ({columns}) VALUES ({placeholders})'
-    cur.execute(f'CREATE TABLE IF NOT EXISTS {table} ({columns}, {constraint})')
-    cur.execute(sql, data)
-    con.commit()
+    for tr in trs:
+        tds = tr.find_all('td')
+        observation = {c:d for c,d in zip(columns, [col.get_text() for col in tds])}
+        # Change the data from string to number.
+        for k in replacement_keys.values():
+            observation[k] = regex.sub('', observation[k])
+        observation['station'] = station
+        observation['Valid'] = fix_date(observation['Valid'])
+        if verbose:
+            print(observation)
+        save_observation(me, observation, dbfile)
+    return
 
 
 if __name__ == "__main__":
@@ -96,15 +123,5 @@ if __name__ == "__main__":
 
     errors = 0
     for station in args.stations:
-        if args.verbose:
-            print(station)
-        data = get_data(me, station)
-        if data:
-            save_data(me, data, args.dbfile)
-            if args.verbose:
-                print(data)
-                print()
-        else:
-            print(f'ERROR: no data for station "{station}".')
-            errors += 1
+        get_observations(me, station, args.dbfile, args.verbose)
     sys.exit(errors)
