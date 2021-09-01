@@ -37,7 +37,6 @@ def fix_date(datestr):
     dt = datetime.strptime(datestr, '%m/%d %H:%M%p %Z')
     # strptime not smart enough to do the right thing with '%p (am/pm)'.
     if re.search('pm ', datestr) and dt.hour != 12:
-        print(dt)
         dt = dt.replace(hour = dt.hour + 12)
     org_year = dt.year
     dt = dt.replace(year = now.year)
