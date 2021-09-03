@@ -8,9 +8,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
+import pandas as pd
 import sqlite3
-#from flask import Flask, g, jsonify, render_template, request
-#import json
 
 DATABASE = 'observations.db'
 N_ROWS = 1000
@@ -23,39 +22,27 @@ def make_dicts(cursor, row):
     return dict((cursor.description[idx][0], value)
                 for idx, value in enumerate(row))
 
-def query_db(query, args=(), one=False):
-    db = sqlite3.connect(DATABASE)
-    db.row_factory = make_dicts
-    cur = db.execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    db.close()
-    return (rv[0] if rv else None) if one else rv
 
-def observations():
-    #n_rows = request.args.get('rows', N_ROWS, type=int)
-    #if n_rows is None:
-    #    n_rows = str(N_ROWS)
-    #elif n_rows < 0:
-    #    query = 'SELECT * FROM observations'
-    #    n_rows = None
-    #else:
-    #    query = 'SELECT * FROM observations ORDER BY Valid DESC LIMIT ?'
-    #    n_rows = str(n_rows)
-    query = 'SELECT Valid, Temp_F, station FROM observations'
-    return query_db(query)
+sql = 'SELECT Valid, Temp_F, station FROM observations ORDER BY Valid DESC'
+con = sqlite3.connect(DATABASE)
+data = pd.read_sql_query(sql, con, parse_dates=['Valid'], dtype={'Temp_F': int})
+con.close()
+data['fake'] = q['Valid'].apply(lambda x:x.replace(year=2020,month=10,day=20))
+data['date'] = q['Valid'].dt.date
+data = data.sort_values(by=['Valid'])
+fig1 = px.line(data, x="Valid", y="Temp_F", color="station", markers=True)
+fig2 = px.line(data, x="fake", y="Temp_F", color="station", symbol="date", markers=True)
+fig2.show()
 
-
-
-data = observations() 
-#print(data)
-
-fig = px.scatter(data, x="Valid", y="Temp_F", color="station")
-
+print('observe.')
 app.layout = html.Div([
     dcc.Graph(
-        id='theid',
-        figure=fig
+        id='g1',
+        figure=fig1
+    ),
+    dcc.Graph(
+        id='g2',
+        figure=fig2
     )
 ])
 

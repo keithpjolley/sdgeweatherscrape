@@ -10,9 +10,10 @@
     # sns.scatterplot(data=df, x='Valid', y='Temp_F', hue='station')
     # sns.lineplot(data=df, x='Valid', y='Temp_F', hue='station')
 
-library(tidyverse)
 library(DBI)
+library(lubridate)
 library(RSQLite)
+library(tidyverse)
 
 con <- dbConnect(SQLite(), "observations.db")
 df <- dbReadTable(con, 'observations') %>%
