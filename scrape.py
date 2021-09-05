@@ -114,7 +114,8 @@ if __name__ == "__main__":
     me = os.path.basename(sys.argv[0])
     p = argparse.ArgumentParser(description='Do something')
     p.add_argument('--verbose', action='store_true', help='Verbose')
-    p.add_argument('--stations', default=stations, action="extend", nargs="+", type=str,
+    #p.add_argument('--stations', default=stations, action="extend", nargs="+", type=str,
+    p.add_argument('--stations', default=stations, nargs="*", type=str,
             help=f'stations to query. default: "{stations}"')
     p.add_argument('--dbfile', default=dbfile,
             help=f'sqlite3 db file to store observerations. default: "{dbfile}"')
