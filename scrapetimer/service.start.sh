@@ -12,7 +12,7 @@ then
     mkdir "${HOME}/.config/systemd/user"
 fi
 
-if [ ! -f "${service}" -a ! -l "${service}" ]
+if [ ! -f "${service}" -a ! -h "${service}" ]
 then
     if [ ! -f './sdgescraper.service' ]
     then
@@ -22,7 +22,7 @@ then
     ln -s "$( pwd )/sdgescraper.service" "${service}"
 fi
 
-if [ ! -f "${timer}" -a ! -l "${timer}" ]
+if [ ! -f "${timer}" -a ! -h "${timer}" ]
 then
     if [ ! -f './sdgescraper.timer' ]
     then
