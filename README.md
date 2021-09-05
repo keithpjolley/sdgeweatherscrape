@@ -28,6 +28,8 @@ delta to be more pronounced even though it's closer to WCV than LCK.
 
 # Run
 
+Requires *chromedriver*. See install directions here: https://sites.google.com/a/chromium.org/chromedriver/downloads
+
 ```
 $ git clone git@github.com:keithpjolley/sdgeweatherscrape.git
 $ cd ./sdgeweatherscrape
