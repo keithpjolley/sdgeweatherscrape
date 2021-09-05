@@ -1,0 +1,17 @@
+{
+    "listeners": {
+        "*:8301": {
+            "pass": "applications/flask"
+        }
+    },
+
+    "applications": {
+        "flask": {
+            "type": "python 3.7",
+            "path": "/home/kjolley/html/altgnat/sdgeweatherscrape",
+            "home": "/home/kjolley/html/altgnat/sdgeweatherscrape/venv/",
+            "module": "wsgi",
+            "callable": "app"
+        }
+    }
+}
