@@ -1,0 +1,12 @@
+#
+
+[Unit]
+Description=Scrapes weather data from SDGE Weather site.
+Wants=sdgescrape.timer
+
+[Service]
+Type=oneshot
+ExecStart=/home/kjolley/html/altgnat/sdgeweatherscrape/scrape.py
+
+[Install]
+WantedBy=multi-user.target
