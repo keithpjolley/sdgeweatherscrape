@@ -1,15 +1,14 @@
 #!/bin/sh
 
-
-
+me="$( basename "${0}" )"
 
 sysd="${HOME}/.config/systemd/user"
 service="${sysd}/sdgescraper.service"
 timer="${sysd}/sdgescraper.timer"
 
-if [ ! -d "${HOME}/.config/systemd/user" ]
+if [ ! -d "${sysd}" ]
 then 
-    mkdir "${HOME}/.config/systemd/user"
+    mkdir -p "${sysd}"
 fi
 
 if [ ! -f "${service}" -a ! -h "${service}" ]
