@@ -1,11 +1,11 @@
 [Unit]
-Description=Scrapes weather data from SDGE Weather site.
-Requires=sdgescrape.service
+Description = Scrapes weather data from SDGE Weather site.
+Requires = sdgescrape.service
 
 [Timer]
-Unit=sdgescrape.service
-OnBootSec=5min
-OnUnitActiveSec=9min
+Unit = sdgescrape.service
+OnBootSec = 5min
+OnUnitActiveSec = 9min
 
 [Install]
-WantedBy=timers.target
+WantedBy = timers.target
