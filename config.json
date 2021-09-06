@@ -7,10 +7,10 @@
 
     "applications": {
         "flask": {
-            "type": "python 3.7",
+            "type": "python 3.9",
             "path": "/home/kjolley/html/altgnat/sdgeweatherscrape",
             "home": "/home/kjolley/html/altgnat/sdgeweatherscrape/venv/",
-            "module": "wsgi",
+            "module": "dashapp",
             "callable": "app"
         }
     }

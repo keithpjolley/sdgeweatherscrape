@@ -5,8 +5,8 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import plotly.express as px
 import pandas as pd
 import sqlite3
@@ -27,8 +27,8 @@ sql = 'SELECT Valid, Temp_F, station FROM observations ORDER BY Valid DESC'
 con = sqlite3.connect(DATABASE)
 data = pd.read_sql_query(sql, con, parse_dates=['Valid'], dtype={'Temp_F': int})
 con.close()
-data['fake'] = q['Valid'].apply(lambda x:x.replace(year=2020,month=10,day=20))
-data['date'] = q['Valid'].dt.date
+data['fake'] = data['Valid'].apply(lambda x:x.replace(year=2020,month=10,day=20))
+data['date'] = data['Valid'].dt.date
 data = data.sort_values(by=['Valid'])
 fig1 = px.line(data, x="Valid", y="Temp_F", color="station", markers=True)
 fig2 = px.line(data, x="fake", y="Temp_F", color="station", symbol="date", markers=True)

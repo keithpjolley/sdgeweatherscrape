@@ -2,4 +2,5 @@ bs4
 dash
 #flask
 lxml
+pandas
 selenium

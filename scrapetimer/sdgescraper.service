@@ -2,10 +2,11 @@
 Description = Scrapes weather data from SDGE Weather site.
 Requires = sdgescrape.service
 
-[Timer]
-Unit = sdgescrape.service
-OnBootSec = 5min
-OnUnitActiveSec = 9min
+[Service]
+Type = oneshot
+ExecStart = /home/kjolley/html/altgnat/sdgeweatherscrape/scrape.sh
+#User = dedicated-user
+#Group=dedicated-user
 
 [Install]
 WantedBy = timers.target
